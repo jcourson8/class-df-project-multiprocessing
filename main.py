@@ -7,8 +7,6 @@ import os
 import hashlib
 import argparse
 import threading
-import multiprocessing as mp
-import time
 
 def find_all_files(data, signatures):
     file_locations = {}
