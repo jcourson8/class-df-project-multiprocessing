@@ -6,7 +6,9 @@
 import os
 import hashlib
 import argparse
-
+import threading
+import multiprocessing as mp
+import time
 
 def find_all_files(data, signatures):
     file_locations = {}
@@ -41,6 +43,24 @@ def calculate_file_length(
     print(file_length)
 
     return file_length
+
+def file_write(file_location, file_type, data, out_dir, signatures):
+    end_signature = signatures[file_type].get('end')
+    file_length = calculate_file_length(data, file_location,
+                                        end_signature)
+
+    file_data = data[file_location:file_location + file_length]
+
+    file_hash = hashlib.sha256(file_data).hexdigest()
+
+    file_name = f"{file_hash}.{file_type}"
+
+    with open(os.path.join(out_dir, file_name), 'wb') as f:
+        f.write(file_data)
+    print('File Name: ' + file_name)
+    print(f'File Size: {file_length} bytes')
+    print('SHA-256 Hash: ' + file_hash)
+    print('')
 
 
 def recover_files(disk_image, out_dir):
@@ -91,25 +111,16 @@ def recover_files(disk_image, out_dir):
 
     all_files = find_all_files(data, signatures)
 
+    threads =[]
+    start = time.time()
     for file_type, file_locations in all_files.items():
         for file_location in file_locations:
-            end_signature = signatures[file_type].get('end')
-            file_length = calculate_file_length(data, file_location,
-                                                end_signature)
-
-            file_data = data[file_location:file_location + file_length]
-
-            file_hash = hashlib.sha256(file_data).hexdigest()
-
-            file_name = f"{file_hash}.{file_type}"
-
-            with open(os.path.join(out_dir, file_name), 'wb') as f:
-                f.write(file_data)
-            print('File Name: ' + file_name)
-            print(f'File Size: {file_length} bytes')
-            print('SHA-256 Hash: ' + file_hash)
-            print('')
-
+            thread = threading.Thread(target=file_write,args=(file_location, file_type, data, out_dir, signatures))
+            thread.start()
+            threads.append(thread)
+            
+    for thread in threads:
+        thread.join()
 
 def main():
     # create the argument parser
