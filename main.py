@@ -67,7 +67,11 @@ def file_write(
     logging.info('File Name: ' + file_name)
     logging.info(f'File Size: {file_length} bytes')
     logging.info('SHA-256 Hash: ' + file_hash)
+<<<<<<< HEAD
     
+=======
+    logging.info('')
+>>>>>>> b6cfa04875d40ce7357ef816d03280e170242b79
 
 
 def recover_files(disk_image, out_dir):
