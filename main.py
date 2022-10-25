@@ -7,6 +7,7 @@ import os
 import hashlib
 import argparse
 import threading
+import logging
 
 def find_all_files(data, signatures):
     file_locations = {}
@@ -36,9 +37,9 @@ def calculate_file_length(
     file_end = data.find(end_signature, file_signature_location)
     file_length = file_end - file_signature_location
 
-    print(file_end)
-    print(file_signature_location)
-    print(file_length)
+    logging.info(file_end)
+    logging.info(file_signature_location)
+    logging.info(file_length)
 
     return file_length
 
@@ -55,10 +56,10 @@ def file_write(file_location, file_type, data, out_dir, signatures):
 
     with open(os.path.join(out_dir, file_name), 'wb') as f:
         f.write(file_data)
-    print('File Name: ' + file_name)
-    print(f'File Size: {file_length} bytes')
-    print('SHA-256 Hash: ' + file_hash)
-    print('')
+    logging.info('File Name: ' + file_name)
+    logging.info(f'File Size: {file_length} bytes')
+    logging.info('SHA-256 Hash: ' + file_hash)
+    logging.info('')
 
 
 def recover_files(disk_image, out_dir):
@@ -110,7 +111,6 @@ def recover_files(disk_image, out_dir):
     all_files = find_all_files(data, signatures)
 
     threads =[]
-    start = time.time()
     for file_type, file_locations in all_files.items():
         for file_location in file_locations:
             thread = threading.Thread(target=file_write,args=(file_location, file_type, data, out_dir, signatures))
